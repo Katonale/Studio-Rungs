@@ -1,0 +1,44 @@
+version: 5
+origin: studio
+aoi:
+  name: Throughput_Per_Min_AOI
+  description: AOI created to reference Inputs and contain TPM
+  parameters:
+    - name: EnableIn
+      dataType: BOOL
+      usage: input
+      defaultValue: 1
+      description: Enable Input - System Defined Parameter
+    - name: EnableOut
+      dataType: BOOL
+      usage: output
+      description: Enable Output - System Defined Parameter
+  localTags:
+    - name: REFERENCE_PE
+      dataType: BOOL
+    - name: ONE_SHOT
+      dataType: BOOL
+    - name: REF_TPM
+      dataType: DINT
+    - name: REF_TPM_TON
+      dataType: TIMER
+      defaultValue:
+        PRE: 60000
+    - name: TPM_MAX
+      dataType: DINT
+    - name: PE_TRIG_TON
+      dataType: TIMER
+      defaultValue:
+        PRE: 150
+  routines:
+    Logic:
+      type: ld
+      content: |-
+        // TPM LOGIC
+        XIC(REFERENCE_PE)ONS(ONE_SHOT)ADD(1,REF_TPM,REF_TPM);
+        XIO(REF_TPM_TON.DN)TON(REF_TPM_TON,?,?);
+        XIC(REF_TPM_TON.DN)[GT(REF_TPM,TPM_MAX)MOVE(REF_TPM,TPM_MAX),MOVE(0,REF_TPM)];
+        // Auto Simulate PE for testing - DO NOT USE FOR PRODUCTION
+        NOP();
+        XIO(PE_TRIG_TON.DN)TON(PE_TRIG_TON,?,?);
+        XIC(PE_TRIG_TON.DN)OTE(REFERENCE_PE);
